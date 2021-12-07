@@ -6,7 +6,7 @@ class DatasetInit:
     upscale: int
     n_rotation: int
     ext: str
-    size: tuple[int, int] = (128, 128)
+    size: tuple = (128, 128)
     img_mode: str = "YCbCr"
 
 
@@ -33,6 +33,7 @@ class TrainData:
     start_epoch: int
     upscale: int = 2
     weights_path: str or tuple = None
+    encoder_state: str = r"./autoencoder/results/w_mYCbCr/epoch_9.pth"
 
 @dataclass
 class TestData:
@@ -51,87 +52,36 @@ class TestData:
 
 ################################### TRAIN CONGIGS #########################################
 
-train_morowind_cfg = TrainData(
-    datasetinit=DatasetInit(r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\textureset1", 4, 4, ".bmp", (128, 128)),
-    batch_size=8, 
-    lr=(10**-4, 10**-6), 
-    epochs=150, 
-    weights_out_path=r"ganresnet\results_gan", 
-    pretrained=True, 
-    upscale=2,
-    weights_path=(r"ganresnet\results_gan\g_epoch_109.pth", r"ganresnet\results_gan\d_epoch_109.pth"),
-    start_epoch=109)
-
-train_vaa_cfg = TrainData(
-    datasetinit=DatasetInit(r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\textureset2", 2, 4, ".png", (64, 64), "YCbCr"),
-    batch_size=24, 
-    lr=(10**-4, 10**-5), 
-    epochs=100, 
-    weights_out_path=r"ganresnet\results_epoch7_adv", 
-    pretrained=True, 
-    upscale=2,
-    weights_path=(r"ganresnet\results_epoch7_adv\g_epoch_14.pth", r"ganresnet\results_epoch7_adv\d_epoch_14.pth"),
-    start_epoch=14)
-
-train_bsd_cfg = TrainData(
-    datasetinit=DatasetInit(r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\BSD100\Test_data\BSD100\HR", 2, 4, ".png", (64, 64)),
-    batch_size=24, 
-    lr=(10**-4, 10**-6), 
-    epochs=30, 
-    weights_out_path=r"ganresnet\results_bsd_gan", 
-    pretrained=False, 
-    upscale=2,
-    weights_path=(None, None),
-    start_epoch=0)
 
 train_halo_cfg = TrainData(
-    datasetinit=DatasetInit(r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\s64_fhalo\hr_64", 2, 4, ".png", (64, 64), "YCbCr"),
-    batch_size=12, 
+    datasetinit=DatasetInit(r"./../data/fhalo", 2, 4, ".png", (64, 64), "YCbCr"),
+    batch_size=8, 
     lr=(10**-4, 10**-5), 
     epochs=100, 
-    weights_out_path=r".\results\results_vgg_p_ssim", 
+    weights_out_path=r"./results/w_enc_mse_adv", 
     pretrained=True, 
     upscale=2,
-    weights_path=(r"results\results_vgg_p_ssim\g_epoch_15.pth", r"results\results_vgg_p_ssim\d_epoch_15.pth"),
-    start_epoch=15)
+    weights_path=(r"./results/pretrained/g_epoch_7.pth", r"./results/pretrained/d_epoch_7.pth"),
+    start_epoch=7)
 
 
 ############################## TEST CONGIGS #######################################
 
 test_cfg1 = TestData(
-    wights_path=r"results\results_ssim\g_epoch_15.pth",
+    wights_path=r"./results/pretrained/g_epoch_7.pth",
     ext=".png",
-    test_data_path=r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\tests\vaa\bic_x2",
+    test_data_path=r"./../data/tests/...",
     out_data_path=r"out_img",
-    hr_data_path=r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\tests\vaa\gt",
-    bic_sr_path=r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\tests\vaa\bicubic",
-    calc_metrics=True
+    hr_data_path=r"./../data/tmp/cfg1",
+    calc_metrics=True,
+    bic_sr_path=r""
 )
 
 test_cfg2 = TestData(
-    wights_path=r"results\results_ssim\g_epoch_15.pth",
+    wights_path=r"./results/pretrained/g_epoch_7.pth",
     ext=".png",
-    test_data_path=r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\tests\vaa\gt",
-    out_data_path=r"out_img2",
-    hr_data_path=r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\tests\vaa\gt",
-    calc_metrics=False
-)
-
-big_test_cfg = TestData(
-    wights_path=r"ganresnet\results_mgan\g_epoch_8.pth",
-    ext=".bmp",
-    test_data_path=r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\tests\big",
-    out_data_path=r"ganresnet\out_img",
-    hr_data_path=r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\textureset1",
-    calc_metrics=False
-)
-
-
-test_bsd_cfg = TestData(
-    wights_path=r"ganresnet\results_bsd_gan\g_epoch_16.pth",
-    ext=".png",
-    test_data_path=r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\tests\Set5\LR\bicubic\x2",
-    out_data_path=r"ganresnet\out_img",
-    hr_data_path=r"C:\Users\Acer\Desktop\Documents\diploma\diploma\data\tests\Set5\HR",
-    calc_metrics=True
+    test_data_path=r"./../data/tests/...",
+    out_data_path=r"./../data/tmp/cfg2",
+    calc_metrics=False,
+    hr_data_path=r""
 )

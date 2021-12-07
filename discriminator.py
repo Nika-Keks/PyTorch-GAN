@@ -1,5 +1,5 @@
-﻿from torch import nn 
-from basicsr.utils.registry import ARCH_REGISTRY
+﻿from basicsr.utils.registry import ARCH_REGISTRY
+from torch import nn 
 
 
 @ARCH_REGISTRY.register()

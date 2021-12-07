@@ -1,7 +1,8 @@
 import torch
 
-from aenet import AEnet
 from torch import nn
+
+from .aenet import AEnet
 
 
 class EncoderLoss(nn.Module):
@@ -19,7 +20,7 @@ class EncoderLoss(nn.Module):
         super().__init__()
 
         autoenc = AEnet()
-        autoenc.load_state_dict(torch.load(model_state_dict_path)["model"])
+        autoenc.load_state_dict(torch.load(model_state_dict_path)["model_state_dict"])
         self.encoder = autoenc.get_encoder()
 
         if criterias_mode == "l2":

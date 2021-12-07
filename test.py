@@ -1,12 +1,16 @@
-﻿from basicsr.archs.srresnet_arch import MSRResNet
-from cfgs import test_cfg2 as cfg
+﻿import numpy as np
 import os
+import torch
+import time as time
+
+from basicsr.archs.srresnet_arch import MSRResNet
 from PIL import Image
 from skimage import io, metrics
-import torch
 from torchvision import transforms
-import numpy as np
-import time as time
+
+from cfgs import test_cfg2 as cfg
+
+
 
 
 def calc_metrics(sr_path: str, gt_path: str, names: list = None):
