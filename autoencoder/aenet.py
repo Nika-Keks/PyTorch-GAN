@@ -127,3 +127,12 @@ class AEnet(nn.Module):
         encode_x = self.encoder(x)
         out = self.decoder(encode_x)
         return out
+
+
+    def get_encoder(self) -> Encoder:
+        """Return encoder
+
+        Returns:
+            Encoder: - 
+        """
+        return self.encoder
