@@ -80,14 +80,17 @@ for epoch in range(cfg.start_epoch, cfg.epochs):
 
         g_out = generator(input)
         d_optimizer.zero_grad()
+
         d_input = torch.cat((g_out, target)).to(device)
         d_out = torch.sigmoid(discriminator(d_input)).to(device)
+
         a1, a2 = tuple(d_out.size())
         size = (a1 // 2, a2)
         real_sample = torch.full(size, 1.).to(device)
         fake_sample = torch.full(size, 0.).to(device)
         d_target = torch.cat((fake_sample, real_sample)).to(device)
         dis_loss = mse_criterias(d_out, d_target)
+        
         dis_loss.backward()
         d_optimizer.step()
         dis_writer(dis_loss.item())
@@ -101,9 +104,9 @@ for epoch in range(cfg.start_epoch, cfg.epochs):
         size = d_out.size()
         real_sample = torch.full(size, 1.).to(device)
 
-        adv_loss = 0.01 * mse_criterias(d_out, real_sample)
+        adv_loss = 0.001 * mse_criterias(d_out, real_sample)
         enc_loss = enc_criterias(g_out, target)
-        mse_loss = 0.1 * mse_criterias(g_out, target)
+        mse_loss = mse_criterias(g_out, target)
 
         g_loss = adv_loss + mse_loss + enc_loss
         g_loss.backward()
@@ -120,7 +123,7 @@ for epoch in range(cfg.start_epoch, cfg.epochs):
             torch.save(generator.state_dict(), os.path.join(cfg.weights_out_path, f"g_epoch_{epoch+1}.pth"))
             torch.save(discriminator.state_dict(), os.path.join(cfg.weights_out_path, f"d_epoch_{epoch+1}.pth"))
 
-        print(f"epoch: {epoch}/{cfg.epochs} | iter: {index}/{nbatches} | adv: {adv_loss.item():.6f} | enc: {enc_loss.item(): .6f} | mse: {mse_loss.item(): .6f} | dis: {dis_loss.item(): .12f}")
+        print(f"epoch: {epoch}/{cfg.epochs} | iter: {index}/{nbatches} | adv: {adv_loss.item():.6f} | enc: {enc_loss.item(): .16f} | mse: {mse_loss.item(): .6f} | dis: {dis_loss.item(): .12f}")
 
     if not os.path.exists(cfg.weights_out_path):
         os.mkdir(cfg.weights_out_path)

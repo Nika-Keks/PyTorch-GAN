@@ -17,13 +17,13 @@ class DoubleConv(nn.Module):
             # Conv
             nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, padding=padding, padding_mode=padding_mode),
             nn.BatchNorm2d(num_features=out_channels),
-            nn.ReLU(inplace=True),
+            nn.ReLU(), # removed inplase=True
             
             # Dilated Conv
             nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=kernel_size, padding=padding * dilation, padding_mode=padding_mode, dilation=dilation),
             nn.BatchNorm2d(num_features=out_channels),
-            nn.ReLU(inplace=True)
-        ).float()
+            nn.ReLU()
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.double_conv(x)
@@ -33,14 +33,14 @@ class Down(nn.Module):
     """
     """
 
-    def __init__(self, in_channels: int, out_channels: int, pool_kernel_size: int = 2, pool_stride: int = 2, dilation: int = 2) -> None:
+    def __init__(self, in_channels: int, out_channels: int, pool_kernel_size: int = 2, pool_stride: int = 2) -> None:
         """
             [Double Conv -> MaxPool]
         """
         super().__init__()
 
         self.down_block = nn.Sequential(
-            DoubleConv(in_channels=in_channels, out_channels=out_channels, dilation=dilation),
+            DoubleConv(in_channels=in_channels, out_channels=out_channels),
             nn.MaxPool2d(kernel_size=pool_kernel_size, stride=pool_stride)
         )
 
@@ -60,8 +60,10 @@ class Up(nn.Module):
         super().__init__()
 
         self.up_block = nn.Sequential(
-            nn.ConvTranspose2d(in_channels=in_channels, out_channels=in_channels, kernel_size=tconv_kernel_size, stride=stride, padding=padding),
-            DoubleConv(in_channels=in_channels, out_channels=out_channels)
+            nn.ConvTranspose2d(in_channels=in_channels, out_channels=out_channels, kernel_size=tconv_kernel_size, stride=stride, padding=padding),
+            nn.BatchNorm2d(num_features=out_channels),
+            nn.ReLU(),
+            DoubleConv(in_channels=out_channels, out_channels=out_channels)
         )
         
 

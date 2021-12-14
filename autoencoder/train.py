@@ -32,20 +32,28 @@ def train(dloader, model, criterius, optimizer, device, loss_saver, epoch: int):
 
 def main():
 
-    nepochs = 10
+    nepochs = 20
+    start_epoch = 0
     lr = 0.001
     gt_path = r"./../data/fhalo"
-    batch_size = 16
-    patch_size = (64, 64)
-    results_path = r"./results/w_mYCbCr"
+    batch_size = 64
+    patch_size = (32, 32)
+    results_path = r"./autoencoder/results/w_YCbCr_relu_bn_s32"
+    pretained_wpath = None #r"./autoencoder/results/w_YCbCr_nobn/epoch_1.pth"
 
-    loss_saver = LossSaver("mse")
+    os.makedirs(results_path, exist_ok=True)
+
+    loss_saver = LossSaver("mse", r"./autoencoder/loss_data/losses")
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     model = AEnet().to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=lr)
+
+    if not pretained_wpath is None:
+        state_dict = torch.load(pretained_wpath)
+        model.load_state_dict(state_dict["model_state_dict"])
 
     mse_crirerius = nn.MSELoss().to(device)
 
@@ -54,7 +62,7 @@ def main():
 
     print(f"found {len(dataset)} samples")
 
-    for epoch in range(nepochs):
+    for epoch in range(start_epoch, nepochs):
         train(dloader=dloader, model=model, criterius=mse_crirerius, optimizer=optimizer, device=device, loss_saver=loss_saver, epoch=epoch)
 
         torch.save({

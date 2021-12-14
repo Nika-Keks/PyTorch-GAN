@@ -8,7 +8,7 @@ from autoencoder.data_utils import BaseRoatateDataset
 
 class SRganDataset(BaseRoatateDataset):
 
-    def __init__(self, gt_path: str, n_rotation: int = 4, ext: str = ".png", size: tuple = ..., img_mode: str = "RGB", resampling_mode = Image.BICUBIC, upscale: int = 2) -> None:
+    def __init__(self, gt_path: str, n_rotation: int = 4, ext: str = ".png", size: tuple = ..., img_mode: str = "RGB", resampling_mode = Image.NEAREST, upscale: int = 2) -> None:
         super().__init__(gt_path, n_rotation=n_rotation, ext=ext, size=size, img_mode=img_mode)
 
         self.resampling_mode = resampling_mode
