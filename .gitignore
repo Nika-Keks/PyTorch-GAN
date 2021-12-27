@@ -1,0 +1,6 @@
+.vscode
+__pycache__
+sandbox.py
+loss_*/
+results/
+/plots

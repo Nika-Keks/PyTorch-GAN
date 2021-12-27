@@ -2,12 +2,12 @@ import torch
 
 from torch import nn
 
-from .aenet import AEnet
+from mutils.models.aenet import AEnet, MAEnet
 
 
 class EncoderLoss(nn.Module):
 
-    def __init__(self, model_state_dict_path: str, criterias_mode: str = "l2") -> None:
+    def __init__(self, model_state_dict_path: str, criterias_mode: str = "l2", model: str = "maenet") -> None:
         """Loss based on encoder represantation
 
         Args:
@@ -19,7 +19,14 @@ class EncoderLoss(nn.Module):
         """
         super().__init__()
 
-        autoenc = AEnet()
+        if model not in ["aenet", "maenet"]:
+            raise NotImplementedError(f"unknown model {model}")
+
+        if model == "aenet": 
+            autoenc = AEnet()
+        else:
+            autoenc = MAEnet()
+            
         autoenc.load_state_dict(torch.load(model_state_dict_path)["model_state_dict"])
         self.encoder = autoenc.get_encoder()
 

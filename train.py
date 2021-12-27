@@ -4,12 +4,13 @@ import torch
 from basicsr.archs.srresnet_arch import MSRResNet
 from torch.utils.data.dataloader import DataLoader
 
-from cfgs import train_halo_cfg as cfg
-from dataset import SRganDataset
-from discriminator import Discriminator64
 
-from autoencoder.losssaver import LossSaver
-from autoencoder.encoder_loss import EncoderLoss
+from cfgs import train_test_cfg as cfg
+from mutils.data.dataset import SRganDataset
+from mutils.models.discriminator import Discriminator64
+
+from mutils.losssaver import LossSaver
+from mutils.losses.encoder_loss import EncoderLoss
 
 
 CUDA_LAUNCH_BLOCKING=1
@@ -41,7 +42,6 @@ d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=cfg.lr[1])
 
 mse_criterias = torch.nn.MSELoss().to(device=device)
 enc_criterias = EncoderLoss(model_state_dict_path=cfg.encoder_state).to(device=device)
-
 
 #init loss writers
 
@@ -89,7 +89,7 @@ for epoch in range(cfg.start_epoch, cfg.epochs):
         real_sample = torch.full(size, 1.).to(device)
         fake_sample = torch.full(size, 0.).to(device)
         d_target = torch.cat((fake_sample, real_sample)).to(device)
-        dis_loss = mse_criterias(d_out, d_target)
+        dis_loss =  mse_criterias(d_out, d_target)
         
         dis_loss.backward()
         d_optimizer.step()
@@ -104,11 +104,11 @@ for epoch in range(cfg.start_epoch, cfg.epochs):
         size = d_out.size()
         real_sample = torch.full(size, 1.).to(device)
 
-        adv_loss = 0.001 * mse_criterias(d_out, real_sample)
+        adv_loss = 0.1 * mse_criterias(d_out, real_sample)
         enc_loss = enc_criterias(g_out, target)
         mse_loss = mse_criterias(g_out, target)
 
-        g_loss = adv_loss + mse_loss + enc_loss
+        g_loss = adv_loss + enc_loss
         g_loss.backward()
         g_optimizer.step()
 
@@ -130,3 +130,4 @@ for epoch in range(cfg.start_epoch, cfg.epochs):
         
     torch.save(generator.state_dict(), os.path.join(cfg.weights_out_path, f"g_epoch_{epoch+1}.pth"))
     torch.save(discriminator.state_dict(), os.path.join(cfg.weights_out_path, f"d_epoch_{epoch+1}.pth"))
+

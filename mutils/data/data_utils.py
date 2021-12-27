@@ -130,10 +130,12 @@ class AutoencoderDataset(BaseRoatateDataset):
     
     def __getitem__(self, index):
         hr_img = super().__getitem__(index)[1]
+        #sr_img = hr_img.resize((x // 2 for x in hr_img.size), resample=Image.NEAREST).resize(hr_img.size, resample=Image.NEAREST)
 
         hr = transforms.ToTensor()(hr_img)
+        #sr = transforms.ToTensor()(sr_img)
 
-        return hr, hr
+        return hr, hr.clone()
 
     def __len__(self):
         return super().__len__()
