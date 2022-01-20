@@ -9,7 +9,7 @@ class DatasetInit:
     ext: str
     size: tuple = (128, 128)
     img_mode: str = "YCbCr"
-    resample_mode = Image.BICUBIC
+    resample_mode = Image.NEAREST
 
 
     def tokwargs(self):
@@ -29,6 +29,7 @@ class TrainData:
     Class contain all configuration data for training GAN SRResNet model
     """
     datasetinit: DatasetInit
+    name: str
     batch_size: int
     lr: float
     epochs: int
@@ -38,6 +39,7 @@ class TrainData:
     encoder_state: str
     upscale: int = 2
     weights_path: str or tuple = None
+    loss_data_path: str = r"./srgan/loss_data"
 
 @dataclass
 class TestData:
@@ -58,35 +60,37 @@ class TestData:
 
 
 train_halo_cfg = TrainData(
-    datasetinit=DatasetInit(r"./../data/fhalo", 2, 4, ".png", (64, 64), "YCbCr"),
+    datasetinit=DatasetInit(r"./../data/fhalo", 4, 4, ".png", (64, 64), "YCbCr"),
+    name="halo_up_mse_pret7",
     batch_size=4, 
     lr=(10**-4, 10**-5), 
     epochs=100, 
-    weights_out_path=r"./results/w_tests", 
+    weights_out_path=r"./srgan/results", 
     pretrained=True, 
     upscale=2,
-    encoder_state=r"./autoencoder/results/w_res_maenet1/epoch_5_it_60000.pth",
-    weights_path=(r"./results/pretrained/g_epoch_7.pth", r"./results/pretrained/d_epoch_7.pth"),
+    encoder_state=r"./autoenc/results/w_l_3sim_0mse_s_64x64_m_ycbcr/epoch_6.pth",
+    weights_path=(r"./srgan/results/pretrained/g_epoch_7.pth", r"./srgan/results/pretrained/d_epoch_7.pth"),
     start_epoch=7)
 
 
 train_test_cfg = TrainData(
-    datasetinit=DatasetInit(r"./../data/tests/fhalo_test", 2, 4, ".png", (64, 64), "YCbCr"),
+    datasetinit=DatasetInit(r"./../data/chalo", 4, 4, ".png", (64, 64), "YCbCr"),
+    name="test",
     batch_size=4, 
     lr=(10**-4, 10**-5), 
-    epochs=100, 
-    weights_out_path=r"./results/w_tests", 
+    epochs=200, 
+    weights_out_path=r"./srgan/results", 
     pretrained=True, 
     upscale=2,
-    encoder_state=r"./autoencoder/results/w_maenet_pret_2/epoch_4_it_180000.pth",
-    weights_path=(r"./results/pretrained/g_epoch_7.pth", r"./results/pretrained/d_epoch_7.pth"),
+    encoder_state=r"./autoenc/results/w_l_3sim_0mse_s_64x64_m_ycbcr/epoch_6.pth",
+    weights_path=(r"./srgan/results/pretrained/g_epoch_7.pth", r"./srgan/results/pretrained/d_epoch_7.pth"),
     start_epoch=7)
 
 
 ############################## TEST CONGIGS #######################################
 
 test_cfg1 = TestData(
-    wights_path=r"./results/pretrained/g_epoch_7.pth",
+    wights_path=r"./srgan/results/w_halo_up_mse_pret7/g_epoch_10.pth",
     ext=".png",
     test_data_path=r"./../data/tests/fhalo_test",
     out_data_path=r"./../data/tmp/cfg1",
@@ -96,10 +100,11 @@ test_cfg1 = TestData(
 )
 
 test_cfg2 = TestData(
-    wights_path=r"./results/w_tests/g_epoch_99.pth",
+    wights_path=r"./srgan/results/w_chalo_up_mse_pert7/g_epoch_11.pth",
     ext=".png",
     test_data_path=r"./../data/tests/fhalo_test",
     out_data_path=r"./../data/tmp/cfg2",
     calc_metrics=False,
-    hr_data_path=r""
+    hr_data_path=r"",
+    img_mode="YCbCr"
 )

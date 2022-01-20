@@ -8,7 +8,7 @@ from PIL import Image
 from skimage import io, metrics
 from torchvision import transforms
 
-from cfgs import test_cfg2 as cfg
+from cfgs import test_cfg1 as cfg
 
 
 
@@ -51,9 +51,12 @@ def predict(wights_path: str, out_data_path: str, test_data_path: str, img_mode:
 
     if names == None:
         names = os.listdir(test_data_path)
+
+
     #init device
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 
     #init and load model
 
@@ -79,7 +82,7 @@ def predict(wights_path: str, out_data_path: str, test_data_path: str, img_mode:
         sr_img.save(os.path.join(out_data_path, name))
         sr_img.close()
         if __name__ == "__main__":
-            print(f"{name} saved | time: {dt}")
+            print(f"{name} saved\t|\ttime: {dt}")
 
 
 # main
@@ -89,7 +92,8 @@ if __name__ == "__main__":
     print("start testing...")
     names = [name for name in os.listdir(cfg.test_data_path) if name.endswith(cfg.ext)]
 
-    #predict
+
+    #predictaa
 
     print("predict...")
     predict(cfg.wights_path, cfg.out_data_path, cfg.test_data_path, cfg.img_mode, names)
@@ -97,7 +101,6 @@ if __name__ == "__main__":
 
     #calc metrics
 
-    
     if cfg.calc_metrics:
         print("calculate metrics")
 

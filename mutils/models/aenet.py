@@ -2,7 +2,7 @@ import torch
 
 from torch import nn
 
-
+__all__ = ["MAEnet", "AEnet", "MEncoder", "Encoder"]
 
 class DoubleConv(nn.Module):
     """

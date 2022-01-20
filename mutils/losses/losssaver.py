@@ -1,6 +1,8 @@
 ﻿import os
 import sys
 
+__all__ = ["LossSaver"]
+
 class LossSaver():
 
     def __init__(self, name: str, path: str = os.path.join("loss_data","losses")) -> None:

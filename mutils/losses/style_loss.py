@@ -1,6 +1,9 @@
 import torch
+import numpy as np
 
 from torch import nn
+
+__all__ = ["StyleLoss"]
 
 class StyleLoss(nn.Module):
 
@@ -14,8 +17,8 @@ class StyleLoss(nn.Module):
         return self.criterion(self._gram_mat(x), self._gram_mat(target))
 
     def _gram_mat(self, x: torch.Tensor) -> torch.Tensor:
-        c, h, w = x.size()
-        features = x.view(c, h * w)
-        Gmat = torch.mm(features. features.t())
+        b, c, h, w = x.size()
+        features = x.view(c * b, h * w)
+        Gmat = torch.mm(features, features.t())
 
-        return Gmat.div(c * h * w)
+        return Gmat.div(np.sqrt(h * w))

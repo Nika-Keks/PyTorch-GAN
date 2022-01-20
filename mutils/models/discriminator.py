@@ -1,6 +1,7 @@
 ﻿from basicsr.utils.registry import ARCH_REGISTRY
 from torch import nn 
 
+__all__ = ["Discriminator64"]
 
 @ARCH_REGISTRY.register()
 class Discriminator64(nn.Module):

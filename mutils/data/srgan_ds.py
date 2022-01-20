@@ -1,10 +1,12 @@
 ﻿import os
+import torch
 
 from torchvision import transforms
 from PIL import Image
 
-from mutils.data.data_utils import BaseRoatateDataset
+from .base_ds import BaseRoatateDataset
 
+__all__ = ["SRganDataset", "NSRganDataset"]
 
 class SRganDataset(BaseRoatateDataset):
 
@@ -26,6 +28,20 @@ class SRganDataset(BaseRoatateDataset):
 
     def __len__(self):
         return super().__len__()
+
+
+class NSRganDataset(SRganDataset):
+
+    def __init__(self, gt_path: str, mean: float, std: float, n_rotation: int = 4, ext: str = ".png", size: tuple = ..., img_mode: str = "RGB", resampling_mode=Image.NEAREST, upscale: int = 2) -> None:
+        super().__init__(gt_path, n_rotation, ext, size, img_mode, resampling_mode, upscale)
+
+        self.mean = mean
+        self.std = std
+
+    def __getitem__(self, index):
+        lr, hr = super().__getitem__(index)
+
+        return torch.normal(mean=self.mean, std=self.std, size=lr.size) + lr, hr
 
 
 def mkdata(data_path: str, upscale: int = 2):

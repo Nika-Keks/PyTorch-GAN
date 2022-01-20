@@ -4,15 +4,12 @@ import torch
 from basicsr.archs.srresnet_arch import MSRResNet
 from torch.utils.data.dataloader import DataLoader
 
-
 from cfgs import train_test_cfg as cfg
-from mutils.data.dataset import SRganDataset
-from mutils.models.discriminator import Discriminator64
+from mutils.data import SRganDataset, NSRganDataset
+from mutils.models import Discriminator64, MGenerator
 
-from mutils.losssaver import LossSaver
-from mutils.losses.encoder_loss import EncoderLoss
-
-
+from mutils.losses import EncoderLoss, SSIMLoss, StyleLoss, StyleEncoderLoss, UpLoss, LossSaver
+  
 CUDA_LAUNCH_BLOCKING=1
 
 #check out directory
@@ -28,7 +25,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 #init generator
 
-generator = MSRResNet(upscale=cfg.upscale).to(device=device)
+generator = MGenerator(upscale=cfg.upscale).to(device=device)
 g_optimizer = torch.optim.Adam(generator.parameters(), lr=cfg.lr[0])
 
 
@@ -41,14 +38,23 @@ d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=cfg.lr[1])
 #init criteriases
 
 mse_criterias = torch.nn.MSELoss().to(device=device)
-enc_criterias = EncoderLoss(model_state_dict_path=cfg.encoder_state).to(device=device)
+#enc_criterias = EncoderLoss(model_state_dict_path=cfg.encoder_state).to(device=device)
+ssim_criterias = SSIMLoss(window_size=3)
+stl_criterias = StyleLoss()
+#sen_criterias = StyleEncoderLoss(model_state_dict_path=cfg.encoder_state, layer=3).to(device=device)
+mme_criterias = torch.nn.L1Loss().to(device=device)
+lup_criterias = UpLoss().to(device)
+
 
 #init loss writers
 
-enc_writer = LossSaver("enc")
-adv_writer = LossSaver("adv")
-dis_writer = LossSaver("dis")
-mse_writer = LossSaver("mse")
+loss_data_path = os.path.join(cfg.loss_data_path, f"l_{cfg.name}")
+enc_writer = LossSaver("enc", loss_data_path)
+adv_writer = LossSaver("adv", loss_data_path)
+dis_writer = LossSaver("dis", loss_data_path)
+sen_writer = LossSaver("sen", loss_data_path)
+stl_writer = LossSaver("stl", loss_data_path)
+mse_writer = LossSaver("mse", loss_data_path)
 
 
 #load weighest
@@ -64,12 +70,18 @@ if cfg.pretrained:
 
 #init dataloader
 
-dataset = SRganDataset(**cfg.datasetinit.tokwargs())
+dataset = NSRganDataset(**cfg.datasetinit.tokwargs(), mean=0., std=0.01)
 dataloader = DataLoader(dataset=dataset, batch_size=cfg.batch_size, shuffle=False)
 print(f"founded {len(dataset)} samples")
 
+
 #train loop
+
 nbatches = len(dataloader)
+weights_out_path = os.path.join(cfg.weights_out_path, f"w_{cfg.name}")
+if not os.path.exists(weights_out_path):
+        os.mkdir(weights_out_path)
+
 for epoch in range(cfg.start_epoch, cfg.epochs):
     for index, (input, target) in enumerate(dataloader, 1):
 
@@ -104,30 +116,25 @@ for epoch in range(cfg.start_epoch, cfg.epochs):
         size = d_out.size()
         real_sample = torch.full(size, 1.).to(device)
 
-        adv_loss = 0.1 * mse_criterias(d_out, real_sample)
-        enc_loss = enc_criterias(g_out, target)
+        adv_loss = 0.001 * mse_criterias(d_out, real_sample)
         mse_loss = mse_criterias(g_out, target)
 
-        g_loss = adv_loss + enc_loss
+        g_loss = adv_loss + mse_loss
         g_loss.backward()
         g_optimizer.step()
 
-        adv_writer(adv_loss.item())
-        mse_writer(mse_loss.item())
-        enc_writer(enc_loss.item())
+        # adv_writer(adv_loss.item())
+        #mse_writer(mse_loss.item())
 
 
         # log info and save state
         
-        if index % 5000 == 0:
-            torch.save(generator.state_dict(), os.path.join(cfg.weights_out_path, f"g_epoch_{epoch+1}.pth"))
-            torch.save(discriminator.state_dict(), os.path.join(cfg.weights_out_path, f"d_epoch_{epoch+1}.pth"))
+        n_iter = 2000
+        if index % n_iter == 0:
+            torch.save(generator.state_dict(), os.path.join(weights_out_path, f"g_epoch_{epoch+1}_{index // n_iter}.pth"))
+            torch.save(discriminator.state_dict(), os.path.join(weights_out_path, f"d_epoch_{epoch+1}_{index // n_iter}.pth"))
 
-        print(f"epoch: {epoch}/{cfg.epochs} | iter: {index}/{nbatches} | adv: {adv_loss.item():.6f} | enc: {enc_loss.item(): .16f} | mse: {mse_loss.item(): .6f} | dis: {dis_loss.item(): .12f}")
-
-    if not os.path.exists(cfg.weights_out_path):
-        os.mkdir(cfg.weights_out_path)
+        print(f"epoch: {epoch}/{cfg.epochs}\t| iter: {index}/{nbatches}\t| adv: {adv_loss.item(): .6f}\t| dis: {dis_loss.item():.6f}\t| mse: {mse_loss.item():.6f}")
         
-    torch.save(generator.state_dict(), os.path.join(cfg.weights_out_path, f"g_epoch_{epoch+1}.pth"))
-    torch.save(discriminator.state_dict(), os.path.join(cfg.weights_out_path, f"d_epoch_{epoch+1}.pth"))
-
+    torch.save(generator.state_dict(), os.path.join(weights_out_path, f"g_epoch_{epoch+1}.pth"))
+    torch.save(discriminator.state_dict(), os.path.join(weights_out_path, f"d_epoch_{epoch+1}.pth"))
