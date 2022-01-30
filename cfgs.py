@@ -60,8 +60,8 @@ class TestData:
 
 
 train_halo_cfg = TrainData(
-    datasetinit=DatasetInit(r"./../data/fhalo", 4, 4, ".png", (64, 64), "YCbCr"),
-    name="halo_up_mse_pret7",
+    datasetinit=DatasetInit(r"./../data/chalo", 4, 4, ".png", (64, 64), "YCbCr"),
+    name="chalo_up_mse_pret7",
     batch_size=4, 
     lr=(10**-4, 10**-5), 
     epochs=100, 
@@ -69,9 +69,21 @@ train_halo_cfg = TrainData(
     pretrained=True, 
     upscale=2,
     encoder_state=r"./autoenc/results/w_l_3sim_0mse_s_64x64_m_ycbcr/epoch_6.pth",
+    weights_path=(r"./srgan/results/w_chalo_up_mse_pret7/g_epoch_18_1.pth", r"./srgan/results/w_chalo_up_mse_pret7/d_epoch_18_1.pth"),
+    start_epoch=17)
+
+train_moro_cfg = TrainData(
+    datasetinit=DatasetInit(r"./../data/morrowind", 4, 4, ".bmp", (64, 64), "YCbCr"),
+    name="moro_up_mse_pret7",
+    batch_size=4, 
+    lr=(10**-4, 10**-5), 
+    epochs=20, 
+    weights_out_path=r"./srgan/results", 
+    pretrained=True, 
+    upscale=2,
+    encoder_state=r"./autoenc/results/w_l_3sim_0mse_s_64x64_m_ycbcr/epoch_6.pth",
     weights_path=(r"./srgan/results/pretrained/g_epoch_7.pth", r"./srgan/results/pretrained/d_epoch_7.pth"),
     start_epoch=7)
-
 
 train_test_cfg = TrainData(
     datasetinit=DatasetInit(r"./../data/chalo", 4, 4, ".png", (64, 64), "YCbCr"),
@@ -100,10 +112,10 @@ test_cfg1 = TestData(
 )
 
 test_cfg2 = TestData(
-    wights_path=r"./srgan/results/w_chalo_up_mse_pert7/g_epoch_11.pth",
+    wights_path=r"./srgan/results/w_test/g_epoch_11.pth",
     ext=".png",
     test_data_path=r"./../data/tests/fhalo_test",
-    out_data_path=r"./../data/tmp/cfg2",
+    out_data_path=r"./../data/tmp/cfgt",
     calc_metrics=False,
     hr_data_path=r"",
     img_mode="YCbCr"

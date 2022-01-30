@@ -41,7 +41,7 @@ class NSRganDataset(SRganDataset):
     def __getitem__(self, index):
         lr, hr = super().__getitem__(index)
 
-        return torch.normal(mean=self.mean, std=self.std, size=lr.size) + lr, hr
+        return torch.normal(mean=self.mean, std=self.std, size=lr.size()) + lr, hr
 
 
 def mkdata(data_path: str, upscale: int = 2):

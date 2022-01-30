@@ -8,7 +8,7 @@ from PIL import Image
 from skimage import io, metrics
 from torchvision import transforms
 
-from cfgs import test_cfg1 as cfg
+from cfgs import test_cfg2 as cfg
 
 
 
