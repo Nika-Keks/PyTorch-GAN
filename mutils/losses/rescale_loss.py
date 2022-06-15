@@ -1,5 +1,3 @@
-from matplotlib.pyplot import sca
-from sklearn.preprocessing import scale
 from torch import nn
 from torch.nn import functional as F
 
@@ -15,7 +13,7 @@ class RescaleLoss(nn.Module):
 
     def forward(self, x, targer):
         low = self.criterias(F.interpolate(x, mode="bilinear", scale_factor=0.5), F.interpolate(targer, mode="bilinear", scale_factor=0.25))
-        med = self.criterias(F.interpolate(x, mode="bilinear", scale_factor=2), targer)
-        up = self.criterias(x, F.interpolate(targer, mode="bilinear", scale_factor=0.5))
+        med = self.criterias(x, F.interpolate(targer, mode="bilinear", scale_factor=0.5))
+        up = self.criterias(F.interpolate(x, mode="bilinear", scale_factor=2), targer)
 
         return low, med, up

@@ -1,5 +1,4 @@
 import os
-from sympy import im
 import torch
 
 from basicsr.archs.srresnet_arch import MSRResNet
@@ -42,10 +41,6 @@ d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=cfg.lr[1])
 
 mse_criterias = torch.nn.MSELoss().to(device=device)
 enc_criterias = EncoderLoss(model_state_dict_path=cfg.encoder_state).to(device=device)
-ssim_criterias = SSIMLoss(window_size=3)
-stl_criterias = StyleLoss()
-#sen_criterias = StyleEncoderLoss(model_state_dict_path=cfg.encoder_state, layer=3).to(device=device)
-mme_criterias = torch.nn.L1Loss().to(device=device)
 lmu_criterias = RescaleLoss(lambda x, y: mse_criterias(x, y) + enc_criterias(x, y)).to(device)
 
 
@@ -91,8 +86,10 @@ for epoch in range(cfg.start_epoch, cfg.epochs):
 
         # discriminator train stap
 
+        upx2 = lambda x: F.interpolate(x, scale_factor=2, mode="bilinear")
+
         g_out = generator(input)
-        g_out = F.interpolate(g_out, mode="bilinear", scale_factor=2)
+        g_out = upx2(g_out)
         d_optimizer.zero_grad()
 
         d_input = torch.cat((g_out, target)).to(device)
@@ -114,14 +111,18 @@ for epoch in range(cfg.start_epoch, cfg.epochs):
 
         g_optimizer.zero_grad()
         g_out = generator(input)
-        d_out = torch.sigmoid(discriminator(F.interpolate(g_out, mode="bilinear", scale_factor=2)))
+        d_out = torch.sigmoid(discriminator(upx2(g_out)))
         size = d_out.size()
         real_sample = torch.full(size, 1.).to(device)
 
         adv_loss = 0.001 * mse_criterias(d_out, real_sample)
+        #low_loss, med_loss, up_loss = lmu_criterias(g_out, target)
+        #ssim_loss = ssim_criterias(g_out, target)
+        #g_loss = adv_loss + low_loss + med_loss + up_loss
+        
         low_loss, med_loss, up_loss = lmu_criterias(g_out, target)
-
-        g_loss = adv_loss + low_loss + med_loss + up_loss
+        
+        g_loss = adv_loss + up_loss
         g_loss.backward()
         g_optimizer.step()
 
@@ -129,11 +130,12 @@ for epoch in range(cfg.start_epoch, cfg.epochs):
         # log info and save state
         
         n_iter = 2000
-        if index % n_iter == 0:
+        if index % n_iter == 0 and False:
             torch.save(generator.state_dict(), os.path.join(weights_out_path, f"g_epoch_{epoch+1}_{index // n_iter}.pth"))
             torch.save(discriminator.state_dict(), os.path.join(weights_out_path, f"d_epoch_{epoch+1}_{index // n_iter}.pth"))
 
-        print(f"epoch: {epoch}/{cfg.epochs}\t| iter: {index}/{nbatches}\t| adv: {adv_loss.item(): .6f}\t| dis: {dis_loss.item():.6f}\t| low: {low_loss.item():.6f}\t| med: {med_loss.item(): .6f}\t| up: {up_loss.item(): .6f}")
-        
-    torch.save(generator.state_dict(), os.path.join(weights_out_path, f"g_epoch_{epoch+1}.pth"))
-    torch.save(discriminator.state_dict(), os.path.join(weights_out_path, f"d_epoch_{epoch+1}.pth"))
+        print(f"epoch: {epoch}/{cfg.epochs}\t| iter: {index}/{nbatches}\t| adv: {adv_loss.item(): .6f}\t| dis: {dis_loss.item():.6f}\t| up: {up_loss.item():.6f}")
+
+    if epoch + 1 in [100, 200]:
+        torch.save(generator.state_dict(), os.path.join(weights_out_path, f"g_epoch_{epoch+1}.pth"))
+        torch.save(discriminator.state_dict(), os.path.join(weights_out_path, f"d_epoch_{epoch+1}.pth"))

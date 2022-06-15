@@ -32,9 +32,9 @@ def prepare_res_image(hr_img: Image.Image, res_img: Image.Image, mode: str):
 
 
 def main():
-    test_data_path = os.path.join(sys.path[0], r"./../data/tests/fhalo_test")
-    out_path = os.path.join(sys.path[0], r"./../data/tmp/test1") 
-    model_wpath = os.path.join(sys.path[0], r"./autoenc/results/w_l_3sim_0mse_s_64x64_m_ycbcr/epoch_6.pth")
+    test_data_path = os.path.join(sys.path[0], r".\..\data\tests\fhalo_test")
+    out_path = os.path.join(sys.path[0], r".\..\data\tmp\test1") 
+    model_wpath = os.path.join(sys.path[0], r".\autoenc\results\w_chalo_mse_s_64x64_m_ycbcr\epoch_7.pth")
     mode = "YCbCr"
     res_mode = False
 

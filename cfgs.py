@@ -1,4 +1,5 @@
 ﻿from dataclasses import dataclass
+from typing import Any
 from PIL import Image
 
 @dataclass
@@ -9,7 +10,7 @@ class DatasetInit:
     ext: str
     size: tuple = (128, 128)
     img_mode: str = "YCbCr"
-    resample_mode = Image.NEAREST
+    resample_mode: Any = Image.NEAREST
 
 
     def tokwargs(self):
@@ -74,7 +75,7 @@ train_halo_cfg = TrainData(
 
 train_moro_cfg = TrainData(
     datasetinit=DatasetInit(r"./../data/morrowind", 4, 4, ".bmp", (64, 64), "YCbCr"),
-    name="moro_up_mse_pret7",
+    name="fmoro_up_mse_pret7",
     batch_size=4, 
     lr=(10**-4, 10**-5), 
     epochs=20, 
@@ -86,15 +87,15 @@ train_moro_cfg = TrainData(
     start_epoch=7)
 
 train_test_cfg = TrainData(
-    datasetinit=DatasetInit(r"./../data/chalo", 4, 4, ".png", (64, 64), "YCbCr"),
+    datasetinit=DatasetInit(r"./../data/test_set", 4, 4, ".png", (64, 64), "YCbCr", resample_mode=Image.BILINEAR),
     name="test",
-    batch_size=4, 
-    lr=(10**-4, 10**-5), 
-    epochs=200, 
-    weights_out_path=r"./srgan/results", 
-    pretrained=True, 
+    batch_size=12,
+    lr=(10**-4, 10**-5),
+    epochs=200,
+    weights_out_path=r"./srgan/results",
+    pretrained=True,
     upscale=2,
-    encoder_state=r"./autoenc/results/w_l_3sim_0mse_s_64x64_m_ycbcr/epoch_6.pth",
+    encoder_state=r"autoenc/results/w_l_3sim_0mse_s_64x64_m_ycbcr/epoch_6.pth",
     weights_path=(r"./srgan/results/pretrained/g_epoch_7.pth", r"./srgan/results/pretrained/d_epoch_7.pth"),
     start_epoch=7)
 
@@ -102,9 +103,9 @@ train_test_cfg = TrainData(
 ############################## TEST CONGIGS #######################################
 
 test_cfg1 = TestData(
-    wights_path=r"./srgan/results/w_halo_up_mse_pret7/g_epoch_10.pth",
+    wights_path=r"./srgan/results/w_test/g_epoch_100.pth",
     ext=".png",
-    test_data_path=r"./../data/tests/fhalo_test",
+    test_data_path=r"./../data/tests/fmorro_test/nealr",
     out_data_path=r"./../data/tmp/cfg1",
     bic_sr_path=r"",
     calc_metrics=False,
@@ -112,11 +113,11 @@ test_cfg1 = TestData(
 )
 
 test_cfg2 = TestData(
-    wights_path=r"./srgan/results/w_test/g_epoch_11.pth",
+    wights_path=r"./srgan/results/w_test/g_epoch_100.pth",
     ext=".png",
-    test_data_path=r"./../data/tests/fhalo_test",
-    out_data_path=r"./../data/tmp/cfgt",
+    test_data_path=r"./../fid_score/data/128/lr",
+    out_data_path=r"./../fid_score/data/128/sr",
     calc_metrics=False,
-    hr_data_path=r"",
+    hr_data_path=r"./../fid_score/data/128/hr",
     img_mode="YCbCr"
 )

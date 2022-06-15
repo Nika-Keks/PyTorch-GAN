@@ -12,13 +12,13 @@ from cfgs import test_cfg2 as cfg
 
 
 
-
 def calc_metrics(sr_path: str, gt_path: str, names: list = None):
     if names == None:
         names = os.listdir(sr_path)
 
     psnr = []
     ssim = []
+    fid = []
     for name in names:
         sr_img = io.imread(os.path.join(sr_path, name))
         hr_img = io.imread(os.path.join(gt_path, name))
@@ -34,6 +34,8 @@ def calc_metrics(sr_path: str, gt_path: str, names: list = None):
                                                         K1=0.01,
                                                         K2=0.03,
                                                         sigma=1.5))
+            fid.append(1) # add the fid score
+            
         except Exception as ex:
             print(f"indalid saved image {name}")
 

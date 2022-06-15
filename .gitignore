@@ -1,6 +1,7 @@
 .vscode
 __pycache__
-sandbox.py
+sandbox.*
 loss_*/
 results
 /plots
+compterrions.txt

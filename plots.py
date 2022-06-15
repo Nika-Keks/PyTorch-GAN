@@ -17,6 +17,10 @@ def select_err(file_path: str, part: float = None) -> np.array:
     file_len = sum([1 for _ in open(file_path, "r")])
     n_points = file_len
     n_points = int(n_points * part)
+    if n_points == 0:
+        print(f"file {file_path} empty")
+        return None, None
+
     n_mean = file_len // n_points
 
     points = np.array([np.mean([float(line) for _, line in zip(range(n_mean), file)]) for _ in range(n_points)])
@@ -28,7 +32,7 @@ def select_err(file_path: str, part: float = None) -> np.array:
 if __name__ == "__main__":
 
     #losses_path = r"./autoencoder/loss_data/l_res_maenet1"
-    losses_path = r"./loss_data/losses"
+    losses_path = r"./srgan/loss_data"
 
     for lfile_name in os.listdir(losses_path):
 
@@ -38,6 +42,8 @@ if __name__ == "__main__":
             continue
         
         x, n_epochs = select_err(os.path.join(losses_path, lfile_name), 0.01)
+        if x is None:
+            continue
         plt.title(name)
         plt.plot(x)
         plt.xlabel("countdown")

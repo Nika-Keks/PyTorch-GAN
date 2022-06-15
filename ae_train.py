@@ -41,20 +41,20 @@ def train(dloader, model, criterius, optimizer, device, loss_saver, results_path
 
 def main():
 
-    name = "l_3sim_0mse_s_64x64_m_ycbcr"
+    name = "chalo_mse_s_64x64_m_ycbcr"
     nepochs = 100
-    lr = 0.0001
-    gt_path = r"./../data/fhalo"
+    lr = 10**-4
+    gt_path = r".\..\data\chalo"
     batch_size = 4
     patch_size = (64, 64)
-    results_path = os.path.join(r"./autoenc/results/", f"w_{name}")
-    pretained_wpath = None
-    start_epoch = 0
+    results_path = os.path.join(r".\autoenc\results", f"w_{name}")
+    pretained_wpath = r".\autoenc\results\w_l_3sim_0mse_s_64x64_m_ycbcr\epoch_6.pth"
+    start_epoch = 6
     img_mode = "YCbCr"
 
     os.makedirs(results_path, exist_ok=True)
 
-    loss_saver = LossSaver("mse", os.path.join(r"./autoenc/loss_data/", f"l_{name}"))
+    loss_saver = LossSaver("mse", os.path.join(r".\autoenc\loss_data", f"l_{name}"))
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -75,8 +75,7 @@ def main():
     print(f"found {len(dataset)} samples")
 
     for epoch in range(start_epoch, nepochs):
-        criterias = ssim_criterias if epoch < 3 else mse_criterias
-        train(dloader=dloader, model=model, criterius=criterias, optimizer=optimizer, device=device, loss_saver=loss_saver, epoch=epoch, results_path=results_path)
+        train(dloader=dloader, model=model, criterius=mse_criterias, optimizer=optimizer, device=device, loss_saver=loss_saver, epoch=epoch, results_path=results_path)
         save_state(path=os.path.join(results_path, f"epoch_{epoch + 1}.pth"), model=model)
             
 
